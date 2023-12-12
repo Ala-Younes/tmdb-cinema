@@ -1,0 +1,18 @@
+import { Route, Routes } from "react-router-dom";
+import { MovieDetail, MovieList, PageNotFound } from "../pages";
+
+const AllRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<MovieList />}></Route>
+      <Route path="movie/:id" element={<MovieDetail />}></Route>
+      <Route path="movies/popular" element={<MovieList />}></Route>
+      <Route path="movies/top" element={<MovieList />}></Route>
+      <Route path="movies/upcoming" element={<MovieList />}></Route>
+      <Route path="search" element={<MovieList />}></Route>
+      <Route path="*" element={<PageNotFound />}></Route>
+    </Routes>
+  );
+};
+
+export default AllRoutes;
