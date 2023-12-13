@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { Card } from "../components";
 import useFetch from "../hooks/useFetch";
-import Movie from "../models/Movie";
+import { Movie } from "../models/Movie";
 
 type Props = {
   apiVariant?: string;

@@ -1,46 +1,53 @@
 import { useCallback, useEffect, useState } from "react";
+import { BASE_URL, TMDB_API_KEY } from "../utils/getEnvVars";
 
 type Props<T> = {
-  apiVariant: string;
+  apiVariant?: string;
   initialValue: T;
-  queryTerm?: string | undefined;
+  queryTerm?: string;
+  movieID?: string;
 };
 
 // type BuildUrlProps<T> = Omit<Props<T>, "initialValue">;
-type BuildUrlProps<T> = Pick<Props<T>, "apiVariant" | "queryTerm">;
+type BuildUrlProps<T> = Pick<Props<T>, "apiVariant" | "queryTerm" | "movieID">;
 
 // TODO a lib or a hook to check types of env vars
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-const VITE_TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-function buildUrl<T>({ apiVariant, queryTerm }: BuildUrlProps<T>) {
+function buildUrl<T>({ apiVariant, queryTerm, movieID }: BuildUrlProps<T>) {
   const baseEndpoint = `${BASE_URL}/${
-    queryTerm ? "search" : "movie"
-  }${apiVariant}`;
+    movieID ? `movie/${movieID}` : queryTerm ? "search" : "movie"
+  }${apiVariant || ""}`;
 
-  const queryString = `api_key=${VITE_TMDB_API_KEY}${
+  const queryString = `api_key=${TMDB_API_KEY}${
     queryTerm ? `&query=${queryTerm}` : ""
   }`;
+
   return `${baseEndpoint}?${queryString}`;
 }
 
-function useFetch<T>({ apiVariant, initialValue, queryTerm }: Props<T>) {
+function useFetch<T>({
+  apiVariant,
+  initialValue,
+  queryTerm,
+  movieID,
+}: Props<T>) {
   const [data, setData] = useState<T>(initialValue);
 
   const url = buildUrl({
     apiVariant,
     queryTerm,
+    movieID,
   });
 
   const fetchData = useCallback(async () => {
     try {
       const response = await fetch(url);
       const json = await response.json();
-      setData(json.results);
+      movieID ? setData(json) : setData(json.results);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }, [url]);
+  }, [movieID, url]);
 
   useEffect(() => {
     fetchData();

@@ -1,6 +1,6 @@
 import { Card } from "../components";
-import Movie from "../models/Movie";
 import useFetch from "../hooks/useFetch";
+import { Movie } from "../models/Movie";
 
 type Props = {
   apiVariant?: string;
