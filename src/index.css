@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .active {
-  @apply dark:text-blue-700 text-white  bg-blue-700  rounded md:bg-transparent md:text-blue-700 !important;
+  @apply text-white  bg-blue-700  rounded md:bg-transparent md:text-blue-700 !important;
 }
