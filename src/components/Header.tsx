@@ -23,8 +23,6 @@ const Header = () => {
   const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    // console.log([e.target.name]);
-
     setSearchTerm(e.target.value);
   };
   const renderDarkModeBtn = () => {
