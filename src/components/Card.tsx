@@ -15,7 +15,7 @@ const Card = ({ movie }: Props) => {
   return (
     <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
       <Link to={`/movie/${id}`}>
-        <img className="rounded-t-lg" src={imageUrl} alt="img" />
+        <img className="rounded-t-lg w-full h-fit" src={imageUrl} alt="img" />
       </Link>
       <div className="p-5">
         <Link to={`/movie/${id}`}>
