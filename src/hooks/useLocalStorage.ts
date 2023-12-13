@@ -6,12 +6,7 @@ type LocalStorageProps<T> = {
   initialValue: T;
 };
 
-function handleThemeChange<T>(key: string, value: T) {
-  if (key === "darkMode") {
-    handleThemeToggle<T>(value);
-  }
-}
-
+const isChangingTheme = (key: string) => key === "darkMode";
 export function useLocalStorage<T>({
   key,
   initialValue,
@@ -24,7 +19,7 @@ export function useLocalStorage<T>({
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(storedValue));
 
-    handleThemeChange(key, storedValue);
+    isChangingTheme(key) && handleThemeToggle<T>(storedValue);
   }, [key, storedValue]);
 
   return [storedValue, setStoredValue] as const;
