@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import Movie from "../models/Movie";
 import backUpImage from "../assets/avatar.jpg";
+import { Movie } from "../models/Movie";
 
 type Props = {
   movie: Movie;
