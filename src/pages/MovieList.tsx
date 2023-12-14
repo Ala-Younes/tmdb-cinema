@@ -1,4 +1,4 @@
-import { Card } from "../components";
+import { Card, Spinner } from "../components";
 import useFetch from "../hooks/useFetch";
 import { Movie } from "../models/Movie";
 
@@ -6,10 +6,17 @@ type Props = {
   apiVariant?: string;
 };
 const MovieList = ({ apiVariant }: Props) => {
-  const { data: movies } = useFetch<Movie[]>({
+  const {
+    data: movies,
+    error,
+    loading,
+  } = useFetch<Movie[]>({
     apiVariant: apiVariant || "",
     initialValue: [],
   });
+
+  if (error) return <div>Something went wrong ...</div>;
+  if (loading) return <Spinner />;
 
   return (
     <main>

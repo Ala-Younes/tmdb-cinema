@@ -3,14 +3,21 @@ import Backup from "../assets/avatar.jpg";
 import { IMovieDetail } from "../models/Movie";
 import formatCurrency from "../utils/formatCurrency";
 import useFetch from "../hooks/useFetch";
+import { Spinner } from "../components";
 
 const MovieDetail = () => {
   const params = useParams();
 
-  const { data: movie } = useFetch<IMovieDetail>({
+  const {
+    data: movie,
+    error,
+    loading,
+  } = useFetch<IMovieDetail>({
     initialValue: {} as IMovieDetail,
     movieID: params.id,
   });
+  if (error) return <div>Something went wrong ...</div>;
+  if (loading) return <Spinner />;
 
   const image = movie?.poster_path
     ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}`

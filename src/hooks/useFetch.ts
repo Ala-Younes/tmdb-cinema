@@ -32,6 +32,8 @@ function useFetch<T>({
   movieID,
 }: Props<T>) {
   const [data, setData] = useState<T>(initialValue);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const url = buildUrl({
     apiVariant,
@@ -40,12 +42,22 @@ function useFetch<T>({
   });
 
   const fetchData = useCallback(async () => {
+    setError(false);
+    setLoading(true);
     try {
-      const response = await fetch(url);
-      const json = await response.json();
-      movieID ? setData(json) : setData(json.results);
+      setTimeout(async () => {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`${response.status} ${response.statusText}`);
+        }
+        const json = await response.json();
+        movieID ? setData(json) : setData(json.results);
+        setLoading(false);
+      }, 200);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.log("There was an error", error);
+      setLoading(false);
+      setError(true);
     }
   }, [movieID, url]);
 
@@ -53,7 +65,7 @@ function useFetch<T>({
     fetchData();
   }, [fetchData]);
 
-  return { data };
+  return { data, loading, error };
 }
 
 export default useFetch;
