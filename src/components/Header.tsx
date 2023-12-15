@@ -19,12 +19,14 @@ const Header = () => {
 
     setSearchTerm("");
   };
+
   // React.ChangeEventHandler<HTMLInputElement>
   const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setSearchTerm(e.target.value);
   };
+
   const renderDarkModeBtn = () => {
     return (
       <button
