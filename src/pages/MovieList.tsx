@@ -1,4 +1,4 @@
-import { Card, Spinner } from "../components";
+import { Card, Carousel, Spinner } from "../components";
 import useFetch from "../hooks/useFetch";
 import { Movie } from "../models/Movie";
 
@@ -19,15 +19,18 @@ const MovieList = ({ apiVariant }: Props) => {
   if (loading) return <Spinner />;
 
   return (
-    <main>
-      <section className="py-7">
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-3">
-          {movies?.map((movie) => (
-            <Card key={movie?.id} movie={movie} />
-          ))}
-        </div>
-      </section>
-    </main>
+    <>
+      <Carousel />
+      <main>
+        <section className="py-7">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 justify-items-center gap-3">
+            {movies?.map((movie) => (
+              <Card key={movie?.id} movie={movie} />
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
   );
 };
 

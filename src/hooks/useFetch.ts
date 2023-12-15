@@ -53,7 +53,7 @@ function useFetch<T>({
         const json = await response.json();
         movieID ? setData(json) : setData(json.results);
         setLoading(false);
-      }, 200);
+      }, 50);
     } catch (error) {
       console.log("There was an error", error);
       setLoading(false);
