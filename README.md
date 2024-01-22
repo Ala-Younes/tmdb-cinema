@@ -2,9 +2,6 @@
 
 ## Live web site
 
-<<<<<<< Updated upstream
-- <https://react-tmdb-api.netlify.app/>
-=======
 - [Navigation Flow](#navigation-flow)
 - [Overview](#overview)
 - [Built With](#built-with)
@@ -64,4 +61,3 @@ Here is the navigation flow for the TMDb Movie Clone using React Router:
 - Integration of ZOD for data validations.
 - Exploration other solutions for managing environment variables, such as mentioned in this post [Best Practices for Handling Per-Environment Configuration in Your JS/TS Applications](https://www.raulmelo.me/en/blog/best-practices-for-handling-per-environment-config-js-ts-applications).
 - etc ...
->>>>>>> Stashed changes
