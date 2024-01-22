@@ -1,7 +1,11 @@
-# TMDb Movie Clone
+# React + TypeScript + Vite + Tailwind
 
-## Table of Contents
+## Live web site
 
+<<<<<<< Updated upstream
+- <https://react-tmdb-api.netlify.app/>
+=======
+- [Navigation Flow](#navigation-flow)
 - [Overview](#overview)
 - [Built With](#built-with)
 - [Features](#features)
@@ -12,6 +16,11 @@
 ### Project Insight: 📚
 
 A side project to create a TMDb clone using React. This endeavor involved leveraging React's capabilities, utilizing the React Router for navigation, and adhering to TypeScript best practices. The project primarily focuses on making API calls through the `fetch` method. The result is a responsive application that showcases movies, their details, and a clean navigation experience.
+
+## Navigation Flow
+
+Here is the navigation flow for the TMDb Movie Clone using React Router:
+![Carousel](./src/assets/readme/flowchart_architecture_movie-app.png)
 
 **Live Demo:** [Explore the React TMDb Clone](https://react-tmdb-api.netlify.app/)
 
@@ -55,3 +64,4 @@ A side project to create a TMDb clone using React. This endeavor involved levera
 - Integration of ZOD for data validations.
 - Exploration other solutions for managing environment variables, such as mentioned in this post [Best Practices for Handling Per-Environment Configuration in Your JS/TS Applications](https://www.raulmelo.me/en/blog/best-practices-for-handling-per-environment-config-js-ts-applications).
 - etc ...
+>>>>>>> Stashed changes
