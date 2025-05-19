@@ -59,9 +59,20 @@ function useFetch<T, S extends z.ZodType<T>>({
       
       // Validate the data with Zod
       try {
-        const validatedData = movieID 
-          ? schema.parse(json) 
-          : schema.parse(json.results);
+        // Check if schema exists before using it
+        if (!schema) {
+          console.error("Schema is undefined");
+          toast.error("Schema validation failed. Please check your configuration.");
+          throw new Error("Schema is undefined");
+        }
+        
+        let validatedData;
+        if (movieID) {
+          validatedData = schema.parse(json);
+        } else {
+          // Handle search results which have a results property
+          validatedData = json.results ? schema.parse(json.results) : schema.parse(json);
+        }
         
         setData(validatedData as T);
       } catch (validationError) {
