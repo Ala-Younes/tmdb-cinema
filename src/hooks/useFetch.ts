@@ -2,13 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { env } from "../env";
 import { z } from "zod";
 import { toast } from "react-toastify";
+import { mockMovies, mockMovieDetails } from "../mocks/movieData";
 
-type Props<T, S extends z.ZodType<T> | undefined = undefined> = {
+type Props<T> = {
   apiVariant?: string;
   initialValue: T;
   queryTerm?: string;
   movieID?: string;
-  schema?: S;
+  schema?: z.ZodType<any>;
 };
 
 type BuildUrlProps = {
@@ -29,13 +30,13 @@ function buildUrl({ apiVariant, queryTerm, movieID }: BuildUrlProps) {
   return `${baseEndpoint}?${queryString}`;
 }
 
-function useFetch<T, S extends z.ZodType<T> | undefined = undefined>({
+function useFetch<T>({
   apiVariant,
   initialValue,
   queryTerm,
   movieID,
   schema,
-}: Props<T, S>) {
+}: Props<T>) {
   const [data, setData] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -49,57 +50,57 @@ function useFetch<T, S extends z.ZodType<T> | undefined = undefined>({
   const fetchData = useCallback(async () => {
     setError(null);
     setLoading(true);
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`${response.status} ${response.statusText}`);
-      }
-      
-      const json = await response.json();
-      
-      // Process the data, with or without validation
+    
+    // Simulate network delay
+    setTimeout(() => {
       try {
-        if (schema) {
-          // If schema exists, validate the data with Zod
-          let validatedData;
-          if (movieID) {
-            validatedData = schema.parse(json);
-          } else {
-            // Handle search results which have a results property
-            validatedData = json.results ? schema.parse(json.results) : schema.parse(json);
-          }
-          setData(validatedData as T);
+        // Use mock data instead of real API
+        let mockData;
+        
+        if (movieID) {
+          mockData = mockMovieDetails;
+        } else if (queryTerm) {
+          // Filter movies by query term (case insensitive)
+          const searchTerm = (queryTerm || '').toLowerCase();
+          mockData = mockMovies.filter(movie => 
+            movie.title.toLowerCase().includes(searchTerm) || 
+            movie.original_title.toLowerCase().includes(searchTerm)
+          );
         } else {
-          // If no schema is provided, just use the data as is
-          if (movieID) {
-            setData(json as T);
+          mockData = mockMovies;
+        }
+        
+        // Process the data, with or without validation
+        try {
+          if (schema) {
+            // If schema exists, validate the data with Zod
+            const validatedData = schema.parse(mockData);
+            setData(validatedData as T);
           } else {
-            setData((json.results || json) as T);
+            // If no schema is provided, just use the data as is
+            setData(mockData as T);
+          }
+        } catch (validationError) {
+          console.error("Validation error:", validationError);
+          if (validationError instanceof z.ZodError) {
+            toast.error("Data validation failed. Some features may not work correctly.");
+            // Still set the data even if validation fails
+            setData(mockData as T);
+          } else {
+            throw validationError;
           }
         }
-      } catch (validationError) {
-        console.error("Validation error:", validationError);
-        if (validationError instanceof z.ZodError) {
-          toast.error("Data validation failed. Some features may not work correctly.");
-          // Still set the data even if validation fails
-          if (movieID) {
-            setData(json as T);
-          } else {
-            setData((json.results || json) as T);
-          }
-        } else {
-          throw validationError;
-        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setLoading(false);
+        setError(err instanceof Error ? err : new Error("Unknown error occurred"));
+        toast.error("Failed to fetch data. Please try again later.");
       }
-      
-      setLoading(false);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setLoading(false);
-      setError(err instanceof Error ? err : new Error("Unknown error occurred"));
-      toast.error("Failed to fetch data. Please try again later.");
-    }
-  }, [movieID, url, schema]);
+    }, 800); // Increased delay to 800ms to ensure loading state is visible
+    
+  }, [movieID, queryTerm, schema]);
 
   useEffect(() => {
     fetchData();
