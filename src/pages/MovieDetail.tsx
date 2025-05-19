@@ -1,9 +1,12 @@
 import { useParams } from "react-router-dom";
 import Backup from "../assets/avatar.jpg";
-import { IMovieDetail } from "../models/Movie";
+import { MovieDetail as MovieDetailType, movieDetailSchema } from "../schemas/movieSchema";
 import formatCurrency from "../utils/formatCurrency";
 import useFetch from "../hooks/useFetch";
 import { Spinner } from "../components";
+import { motion } from "framer-motion";
+import { StarIcon, ClockIcon, CurrencyDollarIcon, CalendarIcon, LinkIcon } from "@heroicons/react/24/solid";
+import { env } from "../env";
 
 const MovieDetail = () => {
   const params = useParams();
@@ -12,109 +15,212 @@ const MovieDetail = () => {
     data: movie,
     error,
     loading,
-  } = useFetch<IMovieDetail>({
-    initialValue: {} as IMovieDetail,
+  } = useFetch<MovieDetailType>({
+    initialValue: {} as MovieDetailType,
     movieID: params.id,
+    schema: movieDetailSchema,
   });
-  if (error) return <div>Something went wrong ...</div>;
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+      <div className="text-red-500 text-xl font-semibold mb-4">
+        Something went wrong while fetching movie details
+      </div>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">
+        {error.message || "Please try again later"}
+      </p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  );
+  
   if (loading) return <Spinner />;
 
   const image = movie?.poster_path
-    ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
+    ? `${env.VITE_IMAGE_BASE_URL}${movie.poster_path}`
     : Backup;
+    
+  // Format release date
+  const formattedDate = new Date(movie?.release_date || "").toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
   return (
-    <main>
-      <section className="flex justify-around flex-wrap py-5 gap-4">
-        <div className="max-w-sm">
-          <img className="rounded" src={image} alt={movie?.title} />
-        </div>
-        <div className="flex flex-col items-center md:items-start max-w-2xl text-gray-700 text-lg dark:text-white">
-          <h1 className="text-4xl font-bold my-3 text-center lg:text-left">
-            {movie?.title}
-          </h1>
-          <p className="my-4 text-center md:text-left">{movie?.overview}</p>
-          {movie?.genres ? (
-            <p className="my-7 flex flex-wrap gap-2">
-              {movie?.genres.map((genre) => (
+    <main className="container mx-auto px-4 py-8">
+      <motion.section 
+        className="flex flex-col md:flex-row justify-between gap-8 py-5"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div 
+          className="md:w-1/3 lg:w-1/4"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="sticky top-24">
+            <img 
+              className="rounded-lg shadow-lg w-full object-cover" 
+              src={image} 
+              alt={movie?.title} 
+            />
+            
+            {movie?.tagline && (
+              <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg italic text-center">
+                "{movie.tagline}"
+              </div>
+            )}
+            
+            {movie?.homepage && (
+              <a
+                href={movie.homepage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition-colors"
+              >
+                <LinkIcon className="w-5 h-5 mr-2" />
+                Official Website
+              </a>
+            )}
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          className="md:w-2/3 lg:w-3/4 flex flex-col text-gray-700 text-lg dark:text-white"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold">
+              {movie?.title}
+              {movie?.release_date && (
+                <span className="text-xl text-gray-500 dark:text-gray-400 ml-2">
+                  ({new Date(movie.release_date).getFullYear()})
+                </span>
+              )}
+            </h1>
+            
+            <div className="flex items-center mt-2 md:mt-0">
+              <div className="flex items-center bg-yellow-100 dark:bg-yellow-900 px-3 py-2 rounded-lg">
+                <StarIcon className="w-6 h-6 text-yellow-500 mr-1" />
+                <span className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                  {movie?.vote_average?.toFixed(1)}
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
+                  /10
+                </span>
+              </div>
+              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                ({movie?.vote_count?.toLocaleString()} votes)
+              </span>
+            </div>
+          </div>
+          
+          {movie?.genres && movie.genres.length > 0 && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {movie.genres.map((genre) => (
                 <span
-                  className="mr-2 border border-gray-200 rounded dark:border-gray-600 p-2"
+                  className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm"
                   key={genre.id}
                 >
                   {genre.name}
                 </span>
               ))}
-            </p>
-          ) : (
-            ""
+            </div>
           )}
-
-          <div className="flex items-center">
-            <svg
-              aria-hidden="true"
-              className="w-5 h-5 text-yellow-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <title>Rating star</title>
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-            </svg>
-            <p className="ml-2 text-gray-900 dark:text-white">
-              {movie?.vote_average}
-            </p>
-            <span className="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"></span>
-            <span className="text-gray-900 dark:text-white">
-              {movie?.vote_count} reviews
-            </span>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {movie?.runtime && (
+              <div className="flex items-center">
+                <ClockIcon className="w-5 h-5 text-gray-500 mr-2" />
+                <span className="font-medium">Runtime:</span>
+                <span className="ml-2">{movie.runtime} minutes</span>
+              </div>
+            )}
+            
+            {movie?.release_date && (
+              <div className="flex items-center">
+                <CalendarIcon className="w-5 h-5 text-gray-500 mr-2" />
+                <span className="font-medium">Release Date:</span>
+                <span className="ml-2">{formattedDate}</span>
+              </div>
+            )}
+            
+            {movie?.budget > 0 && (
+              <div className="flex items-center">
+                <CurrencyDollarIcon className="w-5 h-5 text-gray-500 mr-2" />
+                <span className="font-medium">Budget:</span>
+                <span className="ml-2">{formatCurrency(movie.budget)}</span>
+              </div>
+            )}
+            
+            {movie?.revenue > 0 && (
+              <div className="flex items-center">
+                <CurrencyDollarIcon className="w-5 h-5 text-gray-500 mr-2" />
+                <span className="font-medium">Revenue:</span>
+                <span className="ml-2">{formatCurrency(movie.revenue)}</span>
+              </div>
+            )}
           </div>
-
-          <p className="my-4">
-            <span className="mr-2 font-bold">Runtime:</span>
-            <span>{movie?.runtime} min.</span>
-          </p>
-
-          <p className="my-4">
-            <span className="mr-2 font-bold">Budget:</span>
-            <span>{formatCurrency(movie?.budget)}</span>
-          </p>
-
-          <p className="my-4">
-            <span className="mr-2 font-bold">Revenue:</span>
-            <span>{formatCurrency(movie?.revenue)}</span>
-          </p>
-
-          <p className="my-4">
-            <span className="mr-2 font-bold">Release Date:</span>
-            <span>{movie?.release_date}</span>
-          </p>
-
-          <p className="my-4">
-            <a
-              href={`https://www.imdb.com/title/${movie?.imdb_id}`}
-              target="_blank"
-              className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-              Read more
-              <svg
-                className="w-3.5 h-3.5 ms-2 rtl:rotate-180"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 10"
+          
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-3">Overview</h2>
+            <p className="text-base leading-relaxed">{movie?.overview}</p>
+          </div>
+          
+          {movie?.production_companies && movie.production_companies.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold mb-3">Production Companies</h2>
+              <div className="flex flex-wrap gap-4">
+                {movie.production_companies.map((company) => (
+                  <div key={company.id} className="flex items-center">
+                    <span className="text-base">{company.name}</span>
+                    {company.origin_country && (
+                      <span className="ml-1 text-sm text-gray-500">({company.origin_country})</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {movie?.imdb_id && (
+            <div className="mt-6">
+              <a
+                href={`https://www.imdb.com/title/${movie.imdb_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 focus:ring-4 focus:outline-none focus:ring-yellow-300 transition-colors"
               >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M1 5h12m0 0L9 1m4 4L9 9"
-                />
-              </svg>
-            </a>
-          </p>
-        </div>
-      </section>
+                View on IMDb
+                <svg
+                  className="w-3.5 h-3.5 ms-2 rtl:rotate-180"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 14 10"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M1 5h12m0 0L9 1m4 4L9 9"
+                  />
+                </svg>
+              </a>
+            </div>
+          )}
+        </motion.div>
+      </motion.section>
     </main>
   );
 };

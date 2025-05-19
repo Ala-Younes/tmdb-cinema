@@ -1,4 +1,4 @@
-import { Movie } from "../models/Movie";
+import { Movie } from "../schemas/movieSchema";
 import backUpImage from "../assets/avatar.jpg";
 
 interface TopMovieImage {
