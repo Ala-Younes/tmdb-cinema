@@ -1,39 +1,44 @@
 import { useCallback, useEffect, useState } from "react";
-import { BASE_URL, TMDB_API_KEY } from "../utils/getEnvVars";
+import { env } from "../env";
+import { z } from "zod";
+import { toast } from "react-toastify";
 
-type Props<T> = {
+type Props<T, S extends z.ZodType<T>> = {
   apiVariant?: string;
   initialValue: T;
   queryTerm?: string;
   movieID?: string;
+  schema: S;
 };
 
-// type BuildUrlProps<T> = Omit<Props<T>, "initialValue">;
-type BuildUrlProps<T> = Pick<Props<T>, "apiVariant" | "queryTerm" | "movieID">;
+type BuildUrlProps = {
+  apiVariant?: string;
+  queryTerm?: string;
+  movieID?: string;
+};
 
-// TODO a lib or a hook to check types of env vars
-
-function buildUrl<T>({ apiVariant, queryTerm, movieID }: BuildUrlProps<T>) {
-  const baseEndpoint = `${BASE_URL}/${
-    movieID ? `movie/${movieID}` : queryTerm ? "search" : "movie"
+function buildUrl({ apiVariant, queryTerm, movieID }: BuildUrlProps) {
+  const baseEndpoint = `${env.VITE_BASE_URL}/${
+    movieID ? `movie/${movieID}` : queryTerm ? "search/movie" : "movie"
   }${apiVariant || ""}`;
 
-  const queryString = `api_key=${TMDB_API_KEY}${
+  const queryString = `api_key=${env.VITE_TMDB_API_KEY}${
     queryTerm ? `&query=${queryTerm}` : ""
   }`;
 
   return `${baseEndpoint}?${queryString}`;
 }
 
-function useFetch<T>({
+function useFetch<T, S extends z.ZodType<T>>({
   apiVariant,
   initialValue,
   queryTerm,
   movieID,
-}: Props<T>) {
+  schema,
+}: Props<T, S>) {
   const [data, setData] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   const url = buildUrl({
     apiVariant,
@@ -42,24 +47,39 @@ function useFetch<T>({
   });
 
   const fetchData = useCallback(async () => {
-    setError(false);
+    setError(null);
     setLoading(true);
     try {
-      setTimeout(async () => {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`${response.status} ${response.statusText}`);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}`);
+      }
+      
+      const json = await response.json();
+      
+      // Validate the data with Zod
+      try {
+        const validatedData = movieID 
+          ? schema.parse(json) 
+          : schema.parse(json.results);
+        
+        setData(validatedData as T);
+      } catch (validationError) {
+        console.error("Validation error:", validationError);
+        if (validationError instanceof z.ZodError) {
+          toast.error("Data validation failed. Some features may not work correctly.");
         }
-        const json = await response.json();
-        movieID ? setData(json) : setData(json.results);
-        setLoading(false);
-      }, 50);
-    } catch (error) {
-      console.log("There was an error", error);
+        throw validationError;
+      }
+      
       setLoading(false);
-      setError(true);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setLoading(false);
+      setError(err instanceof Error ? err : new Error("Unknown error occurred"));
+      toast.error("Failed to fetch data. Please try again later.");
     }
-  }, [movieID, url]);
+  }, [movieID, url, schema]);
 
   useEffect(() => {
     fetchData();

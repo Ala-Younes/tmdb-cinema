@@ -1,7 +1,20 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "../assets/react.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { motion } from "framer-motion";
+import { Transition } from "@headlessui/react";
+import { 
+  MagnifyingGlassIcon, 
+  SunIcon, 
+  MoonIcon, 
+  FilmIcon,
+  FireIcon,
+  StarIcon,
+  CalendarIcon,
+  Bars3Icon,
+  XMarkIcon
+} from "@heroicons/react/24/outline";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,235 +23,203 @@ const Header = () => {
     key: "darkMode",
     initialValue: false,
   });
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // ! Navigate is rerendering and not refreshing
-    navigate(`/search?q=${searchTerm}`);
-
-    setSearchTerm("");
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm("");
+      setHidden(true);
+    }
   };
 
-  // React.ChangeEventHandler<HTMLInputElement>
   const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setSearchTerm(e.target.value);
   };
 
-  const renderDarkModeBtn = () => {
-    return (
-      <button
-        onClick={() => {
-          setDarkMode((previousMode) => !previousMode);
-        }}
-        data-tooltip-target="navbar-search-example-toggle-dark-mode-tooltip"
-        type="button"
-        data-toggle-dark="light"
-        className="flex items-center p-2 mr-2 text-xs font-medium text-gray-700 bg-white rounded-lg border border-gray-200 toggle-dark-state-example hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500 dark:bg-gray-800 focus:outline-none dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-      >
-        {darkMode ? (
-          <svg
-            aria-hidden="true"
-            data-toggle-icon="sun"
-            className="w-4 h-4"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-              fillRule="evenodd"
-              clipRule="evenodd"
-            ></path>
-          </svg>
-        ) : (
-          <svg
-            aria-hidden="true"
-            data-toggle-icon="moon"
-            className="w-4 h-4"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-          </svg>
-        )}
-      </button>
-    );
+  const toggleDarkMode = () => {
+    setDarkMode((previousMode) => !previousMode);
   };
 
+  const navItems = [
+    { path: "/", label: "Home", icon: <FilmIcon className="w-5 h-5 mr-1" /> },
+    { path: "movies/popular", label: "Popular", icon: <FireIcon className="w-5 h-5 mr-1" /> },
+    { path: "movies/top", label: "Top Rated", icon: <StarIcon className="w-5 h-5 mr-1" /> },
+    { path: "movies/upcoming", label: "Upcoming", icon: <CalendarIcon className="w-5 h-5 mr-1" /> },
+  ];
+
   return (
-    <header className="sticky top-0">
-      <nav className="bg-white border-gray-200 dark:bg-gray-900">
-        <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-          <Link to="/" className="flex items-center space-x-3">
-            <img src={Logo} className="h-8" alt="Cinamate Logo" />
-            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-              Cinamate
-            </span>
-          </Link>
-          <div id="mobile-nav" className="flex md:order-2">
-            {renderDarkModeBtn()}
-            <button
-              onClick={() => setHidden(!hidden)}
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+      <nav className={`bg-white dark:bg-gray-900 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}>
+        <div className="max-w-7xl flex flex-wrap items-center justify-between mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Link to="/" className="flex items-center space-x-3">
+              <motion.img 
+                src={Logo} 
+                className="h-8 w-8" 
+                alt="Cinamate Logo"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+              />
+              <span className="self-center text-2xl font-bold text-gray-800 dark:text-white">
+                Cinamate
+              </span>
+            </Link>
+          </motion.div>
+          
+          <div className="flex items-center md:order-2">
+            {/* Dark mode toggle */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleDarkMode}
               type="button"
-              data-collapse-toggle="navbar-search"
-              aria-controls="navbar-search"
-              aria-expanded="false"
-              className="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 me-1"
+              className="p-2 mr-2 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+              aria-label="Toggle dark mode"
             >
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                />
-              </svg>
-              <span className="sr-only">Search</span>
-            </button>
+              {darkMode ? (
+                <SunIcon className="w-5 h-5" />
+              ) : (
+                <MoonIcon className="w-5 h-5" />
+              )}
+            </motion.button>
+            
+            {/* Desktop search */}
             <div className="relative hidden md:block">
-              <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+              <form onSubmit={handleSubmit} className="flex items-center">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    value={searchTerm}
+                    onChange={handleOnChange}
+                    type="text"
+                    className="w-full md:w-64 pl-10 pr-4 py-2 text-sm text-gray-900 bg-gray-100 border-0 rounded-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500"
+                    placeholder="Search for movies..."
+                    aria-label="Search"
                   />
-                </svg>
-                <span className="sr-only">Search icon</span>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <input
-                  value={searchTerm}
-                  onChange={handleOnChange}
-                  name="search"
-                  type="text"
-                  id="search-navbar"
-                  className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Search..."
-                />
+                </div>
+                <button
+                  type="submit"
+                  className="ml-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                  Search
+                </button>
               </form>
             </div>
+            
+            {/* Mobile menu button */}
             <button
-              data-collapse-toggle="navbar-search"
-              type="button"
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-              aria-controls="navbar-search"
-              aria-expanded="false"
               onClick={() => setHidden(!hidden)}
+              type="button"
+              className="inline-flex items-center p-2 ml-3 text-gray-700 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+              aria-controls="mobile-menu"
+              aria-expanded={!hidden}
             >
               <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 17 14"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M1 1h15M1 7h15M1 13h15"
-                />
-              </svg>
+              {hidden ? (
+                <Bars3Icon className="w-6 h-6" />
+              ) : (
+                <XMarkIcon className="w-6 h-6" />
+              )}
             </button>
           </div>
-
-          <div
-            className={`items-center justify-between ${
-              hidden ? "hidden" : ""
-            } w-full md:flex md:w-auto md:order-1`}
-            id="navbar-search"
-          >
-            <div className="relative mt-3 md:hidden">
-              <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                  />
-                </svg>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <input
-                  value={searchTerm}
-                  onChange={handleOnChange}
-                  name="search"
-                  type="text"
-                  id="search-navbar"
-                  className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Search..."
-                />
-              </form>
-            </div>
-            <ul
-              id="nav-links"
-              className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
-            >
-              <li>
-                <NavLink
-                  to="/"
-                  className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
-                  aria-current="page"
-                >
-                  Home
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="movies/popular"
-                  className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Popular
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="movies/top"
-                  className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Top Rated
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="movies/upcoming"
-                  className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Upcoming
-                </NavLink>
-              </li>
-            </ul>
+          
+          {/* Desktop navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-8">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => 
+                  `flex items-center text-base font-medium transition-colors ${
+                    isActive 
+                      ? 'text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-700 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400'
+                  }`
+                }
+              >
+                {item.icon}
+                {item.label}
+              </NavLink>
+            ))}
           </div>
+          
+          {/* Mobile menu */}
+          <Transition
+            show={!hidden}
+            enter="transition duration-200 ease-out"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="transition duration-150 ease-in"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+            className="w-full md:hidden"
+          >
+            <div className="flex flex-col mt-4 space-y-4 pb-4">
+              {/* Mobile search */}
+              <form onSubmit={handleSubmit} className="mb-2">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    value={searchTerm}
+                    onChange={handleOnChange}
+                    type="text"
+                    className="w-full pl-10 pr-4 py-2 text-sm text-gray-900 bg-gray-100 border-0 rounded-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500"
+                    placeholder="Search for movies..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                  Search
+                </button>
+              </form>
+              
+              {/* Mobile navigation */}
+              <div className="flex flex-col space-y-2 border-t pt-4 dark:border-gray-700">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setHidden(true)}
+                    className={({ isActive }) => 
+                      `flex items-center py-2 px-3 rounded-lg transition-colors ${
+                        isActive 
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'
+                      }`
+                    }
+                  >
+                    {item.icon}
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </Transition>
         </div>
       </nav>
     </header>
