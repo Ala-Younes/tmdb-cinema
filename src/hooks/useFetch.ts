@@ -47,26 +47,31 @@ function useFetch<T>({
     movieID,
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(() => {
     setError(null);
     setLoading(true);
     
     // Simulate network delay
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       try {
         // Use mock data instead of real API
         let mockData;
         
         if (movieID) {
+          // For movie details
           mockData = mockMovieDetails;
         } else if (queryTerm) {
-          // Filter movies by query term (case insensitive)
+          // For search results
           const searchTerm = (queryTerm || '').toLowerCase();
-          mockData = mockMovies.filter(movie => 
+          const filteredMovies = mockMovies.filter(movie => 
             movie.title.toLowerCase().includes(searchTerm) || 
             movie.original_title.toLowerCase().includes(searchTerm)
           );
+          
+          console.log(`Search term: "${searchTerm}", Found: ${filteredMovies.length} movies`);
+          mockData = filteredMovies;
         } else {
+          // For movie lists (popular, top rated, etc.)
           mockData = mockMovies;
         }
         
@@ -98,12 +103,14 @@ function useFetch<T>({
         setError(err instanceof Error ? err : new Error("Unknown error occurred"));
         toast.error("Failed to fetch data. Please try again later.");
       }
-    }, 800); // Increased delay to 800ms to ensure loading state is visible
+    }, 800); // 800ms delay to simulate network
     
+    return () => clearTimeout(timer);
   }, [movieID, queryTerm, schema]);
 
   useEffect(() => {
-    fetchData();
+    const cleanup = fetchData();
+    return cleanup;
   }, [fetchData]);
 
   return { data, loading, error };

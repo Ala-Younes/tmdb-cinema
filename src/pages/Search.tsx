@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, Spinner } from "../components";
 import useFetch from "../hooks/useFetch";
@@ -12,6 +13,7 @@ type Props = {
 const Search = ({ apiVariant }: Props) => {
   const [searchParams] = useSearchParams();
   const queryTerm = searchParams.get("q");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const {
     data: movies,
@@ -23,6 +25,20 @@ const Search = ({ apiVariant }: Props) => {
     queryTerm: queryTerm ? queryTerm : "",
     schema: movieSchema.array(),
   });
+
+  // Set initial load to false after first load
+  useEffect(() => {
+    if (!loading && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [loading, isInitialLoad]);
+
+  // Log search results for debugging
+  useEffect(() => {
+    if (!loading && !isInitialLoad) {
+      console.log(`Search results for "${queryTerm}":`, movies);
+    }
+  }, [movies, loading, queryTerm, isInitialLoad]);
 
   if (error) return (
     <div className="container mx-auto px-4 py-8">
@@ -43,7 +59,14 @@ const Search = ({ apiVariant }: Props) => {
     </div>
   );
   
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="container mx-auto px-4 py-8 min-h-[70vh] flex flex-col items-center justify-center">
+      <Spinner />
+      <p className="mt-4 text-gray-600 dark:text-gray-300 text-lg">
+        Searching for "{queryTerm}"...
+      </p>
+    </div>
+  );
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -53,7 +76,7 @@ const Search = ({ apiVariant }: Props) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {movies.length !== 0 ? (
+        {movies.length > 0 ? (
           <div className="flex flex-col items-center md:items-start">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-2">
               Search Results
