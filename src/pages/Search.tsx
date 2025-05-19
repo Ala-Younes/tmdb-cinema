@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, Spinner } from "../components";
 import useFetch from "../hooks/useFetch";
-import { Movie, movieSchema } from "../schemas/movieSchema";
+import { Movie, MovieSearchResults, movieSearchResultsSchema } from "../schemas/movieSchema";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
@@ -16,15 +16,18 @@ const Search = ({ apiVariant }: Props) => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const {
-    data: movies,
+    data: searchResults,
     loading,
     error,
-  } = useFetch<Movie[]>({
+  } = useFetch<MovieSearchResults>({
     apiVariant: apiVariant || "",
-    initialValue: [],
+    initialValue: { page: 1, results: [], total_pages: 0, total_results: 0 },
     queryTerm: queryTerm ? queryTerm : "",
-    schema: movieSchema.array(),
+    schema: movieSearchResultsSchema,
   });
+
+  // Extract movies from search results
+  const movies = searchResults?.results || [];
 
   // Set initial load to false after first load
   useEffect(() => {
@@ -36,9 +39,9 @@ const Search = ({ apiVariant }: Props) => {
   // Log search results for debugging
   useEffect(() => {
     if (!loading && !isInitialLoad) {
-      console.log(`Search results for "${queryTerm}":`, movies);
+      console.log(`Search results for "${queryTerm}":`, searchResults);
     }
-  }, [movies, loading, queryTerm, isInitialLoad]);
+  }, [searchResults, loading, queryTerm, isInitialLoad]);
 
   if (error) return (
     <div className="container mx-auto px-4 py-8">
@@ -82,7 +85,7 @@ const Search = ({ apiVariant }: Props) => {
               Search Results
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Found <span className="font-semibold">{movies.length}</span> results for: 
+              Found <span className="font-semibold">{searchResults.total_results}</span> results for: 
               <span className="ml-2 px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
                 "{queryTerm}"
               </span>
