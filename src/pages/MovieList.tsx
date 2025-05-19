@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, Carousel, Spinner } from "../components";
 import useFetch from "../hooks/useFetch";
-import { Movie, movieSchema } from "../models/Movie";
+import { Movie, movieSchema } from "../schemas/movieSchema";
 import PageNotFoundImage from "../assets/avatar.jpg";
 import { motion } from "framer-motion";
 
@@ -17,7 +17,7 @@ const MovieList = ({ apiVariant }: Props) => {
     data: movies,
     error,
     loading,
-  } = useFetch<Movie[], typeof movieSchema>({
+  } = useFetch<Movie[]>({
     apiVariant: apiVariant || "",
     initialValue: [],
     schema: movieSchema.array(),

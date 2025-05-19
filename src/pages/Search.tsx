@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { Card, Spinner } from "../components";
 import useFetch from "../hooks/useFetch";
-import { Movie, movieSchema } from "../models/Movie";
+import { Movie, movieSchema } from "../schemas/movieSchema";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
@@ -17,7 +17,7 @@ const Search = ({ apiVariant }: Props) => {
     data: movies,
     loading,
     error,
-  } = useFetch<Movie[], typeof movieSchema>({
+  } = useFetch<Movie[]>({
     apiVariant: apiVariant || "",
     initialValue: [],
     queryTerm: queryTerm ? queryTerm : "",

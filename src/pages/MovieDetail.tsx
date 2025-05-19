@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import Backup from "../assets/avatar.jpg";
-import { MovieDetail as MovieDetailType, movieDetailSchema } from "../models/Movie";
+import { MovieDetail as MovieDetailType, movieDetailSchema } from "../schemas/movieSchema";
 import formatCurrency from "../utils/formatCurrency";
 import useFetch from "../hooks/useFetch";
 import { Spinner } from "../components";
@@ -15,7 +15,7 @@ const MovieDetail = () => {
     data: movie,
     error,
     loading,
-  } = useFetch<MovieDetailType, typeof movieDetailSchema>({
+  } = useFetch<MovieDetailType>({
     initialValue: {} as MovieDetailType,
     movieID: params.id,
     schema: movieDetailSchema,

@@ -3,12 +3,12 @@ import { env } from "../env";
 import { z } from "zod";
 import { toast } from "react-toastify";
 
-type Props<T, S extends z.ZodType<T>> = {
+type Props<T, S extends z.ZodType<T> | undefined = undefined> = {
   apiVariant?: string;
   initialValue: T;
   queryTerm?: string;
   movieID?: string;
-  schema: S;
+  schema?: S;
 };
 
 type BuildUrlProps = {
@@ -29,7 +29,7 @@ function buildUrl({ apiVariant, queryTerm, movieID }: BuildUrlProps) {
   return `${baseEndpoint}?${queryString}`;
 }
 
-function useFetch<T, S extends z.ZodType<T>>({
+function useFetch<T, S extends z.ZodType<T> | undefined = undefined>({
   apiVariant,
   initialValue,
   queryTerm,
@@ -57,30 +57,39 @@ function useFetch<T, S extends z.ZodType<T>>({
       
       const json = await response.json();
       
-      // Validate the data with Zod
+      // Process the data, with or without validation
       try {
-        // Check if schema exists before using it
-        if (!schema) {
-          console.error("Schema is undefined");
-          toast.error("Schema validation failed. Please check your configuration.");
-          throw new Error("Schema is undefined");
-        }
-        
-        let validatedData;
-        if (movieID) {
-          validatedData = schema.parse(json);
+        if (schema) {
+          // If schema exists, validate the data with Zod
+          let validatedData;
+          if (movieID) {
+            validatedData = schema.parse(json);
+          } else {
+            // Handle search results which have a results property
+            validatedData = json.results ? schema.parse(json.results) : schema.parse(json);
+          }
+          setData(validatedData as T);
         } else {
-          // Handle search results which have a results property
-          validatedData = json.results ? schema.parse(json.results) : schema.parse(json);
+          // If no schema is provided, just use the data as is
+          if (movieID) {
+            setData(json as T);
+          } else {
+            setData((json.results || json) as T);
+          }
         }
-        
-        setData(validatedData as T);
       } catch (validationError) {
         console.error("Validation error:", validationError);
         if (validationError instanceof z.ZodError) {
           toast.error("Data validation failed. Some features may not work correctly.");
+          // Still set the data even if validation fails
+          if (movieID) {
+            setData(json as T);
+          } else {
+            setData((json.results || json) as T);
+          }
+        } else {
+          throw validationError;
         }
-        throw validationError;
       }
       
       setLoading(false);

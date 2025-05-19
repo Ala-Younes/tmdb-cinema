@@ -1,6 +1,6 @@
 import { Spinner } from "../index";
 import useFetch from "../../hooks/useFetch";
-import { Movie } from "../../models/Movie";
+import { Movie, movieSchema } from "../../schemas/movieSchema";
 import { useCallback, useEffect, useState } from "react";
 import getTopMoviesImages from "../../utils/getTopMovies";
 import { Link, useNavigate } from "react-router-dom";
@@ -23,6 +23,7 @@ const Carousel = ({ onFilterMovies }: Props) => {
   } = useFetch<Movie[]>({
     apiVariant: "/now_playing",
     initialValue: [],
+    schema: movieSchema.array(),
   });
 
   const topSlides = getTopMoviesImages(4, movies);

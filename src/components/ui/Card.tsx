@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import backUpImage from "../../assets/avatar.jpg";
-import { Movie } from "../../models/Movie";
+import { Movie } from "../../schemas/movieSchema";
 import { motion } from "framer-motion";
 import { env } from "../../env";
 import { StarIcon } from "@heroicons/react/24/solid";
